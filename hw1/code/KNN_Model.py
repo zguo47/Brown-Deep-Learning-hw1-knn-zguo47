@@ -114,7 +114,8 @@ class KNN_Model(KNN_ConfMtx):
         #     Thus, the length of this variable should also be 1000. (distances.shape == 1000)
         # Hint: If you make clever use of numpy functions and the Numpy broadcasting rules,
         #     you can construct this variable without using any for-loops.
-        distances = None
+
+        distances = np.sum(np.square(self.image_train - new_image), -1)
 
         # TODO #2: create a Numpy array called "nearest_indices".
         # This is a one-dimensional array of the indices
@@ -132,10 +133,18 @@ class KNN_Model(KNN_ConfMtx):
         # Hint2: If np.argpartition is too confusing, you can use a different numpy function instead
         #        The difference is that np.argpartition takes O(n) amount of time,
         #        while the alternative takes O(n*log(n)) amount of time.
-        nearest_indices = None
-        nearest_label = None
-        class_counts = None
-
+        nearest_indices = np.argpartition(distances, 1)[0:self.k_neighbors]
+        nearest_label = []
+        for i in nearest_indices:
+            nearest_label.append(self.label_train[i])
+        n = 0
+        class_counts = [0]*len(self.class_list)
+        for j in self.class_list:
+            for k in nearest_label:
+                if (j == k):
+                    class_counts[n] = class_counts[n]+1
+            n = n + 1
+        nearest_label = np.array(nearest_label)
         return (class_counts, nearest_indices) if return_indices else class_counts
 
     def predict(self, new_image):
@@ -155,9 +164,9 @@ class KNN_Model(KNN_ConfMtx):
         """
         # TODO: return the most frequent label among the neighbors
         # Hint: use numpy and remember the variable self.class_list
-        class_counts_array = None
-        prediction_label = None
-
+        class_counts_array = np.array(self.get_neighbor_counts(new_image))
+        max_index = np.argmax(class_counts_array)
+        prediction_label = self.class_list[max_index]
         return prediction_label
 
     def get_prediction_array(self, image_test):
@@ -169,6 +178,7 @@ class KNN_Model(KNN_ConfMtx):
         :return prediction_array: the Numpy array of predictions.
         """
         prediction_list = []
+
         for i, each_image in enumerate(image_test):
             # TODO #1: Populate the prediction_list array.
 
@@ -176,6 +186,8 @@ class KNN_Model(KNN_ConfMtx):
             #      so that you can check the progress. For the MNIST dataset you probably don't need this progress check,
             #      but for CIFAR, you will probably find it useful. Progress checks are also a useful pattern commonly
             #      used when training machine learning models.
-            continue
+            prediction_list.append(self.predict(each_image))
+            if (i%100 == 0):
+                print("progressing... ")
 
         return np.array(prediction_list)

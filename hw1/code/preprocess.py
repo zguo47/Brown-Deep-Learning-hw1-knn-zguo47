@@ -1,7 +1,11 @@
 import gzip
+from os import remove
 import pickle
+import codecs
+
 
 import numpy as np
+import numpy.ma as ma
 
 
 def get_data_MNIST(subset, data_path="../data"):
@@ -35,10 +39,14 @@ def get_data_MNIST(subset, data_path="../data"):
     labels_file_path = f"{data_path}/mnist/{labels_file_path}"
 
     ## TODO: read the image file and normalize, flatten, and type-convert image
-    image = None
+    with open(inputs_file_path, 'rb')as f, gzip.GzipFile(fileobj=f) as bytestream:
+        image = np.frombuffer(bytestream.read(-1), np.uint8, -1, 16)
+        image = np.array(image).astype(np.float32)/255.0
+        image = np.reshape(image, (-1, 784))
 
     ## TODO: read the label file
-    label = None
+    with open(labels_file_path, 'rb')as f, gzip.GzipFile(fileobj=f) as bytestream:
+        label = np.frombuffer(bytestream.read(-1), np.uint8, -1, 8)
 
     return image, label
 
@@ -75,12 +83,26 @@ def get_data_CIFAR(subset, data_path="../data"):
     #   Then, you can access the components i.e. 'data' via cifar_dict[b"data"].
     #   If data_files contains multple entries, make sure to unpickle all of them
     #   and concatenate the results together into a single training set.
+    def unpickle(file):
+        import pickle
+        with open(file, 'rb') as fo:
+            dict = pickle.load(fo, encoding='bytes')
+        return dict
+    arr_data = []
+    arr_labels = []
+    for i in data_files:
+        pickled_data = unpickle(i)[b"data"]
+        pickled_labels = unpickle(i)[b"labels"]
+        arr_data.append(pickled_data)
+        arr_labels.extend(pickled_labels)
+        
+    arr_data = np.array(arr_data).reshape(-1, 3072)
 
     cifar_dict = {  ## HINT: Might help to start out with this
-        b"data": [],
-        b"labels": [],
+        b"data": arr_data,
+        b"labels": arr_labels,
     }
-    cifar_meta = None
+    cifar_meta = unpickle(data_meta)
 
     image = cifar_dict[b"data"]
     label = cifar_dict[b"labels"]
@@ -94,7 +116,15 @@ def get_data_CIFAR(subset, data_path="../data"):
     #   binary strings and not UTF-8 strings right now)
     #   This variable "label" should be a Numpy array, not a Python list.
 
-    label = None
+    arr = []
+    for i in label_names:
+        i = codecs.decode(i)
+        arr.append(i)
+    new_label = []
+    for j in label:
+        new_label.append([np.array(arr[j])])
+
+    label = np.concatenate(new_label)
 
     # TODO #3:
     #   You should reshape the input image np.array to (num, width, height, channels).
@@ -105,7 +135,7 @@ def get_data_CIFAR(subset, data_path="../data"):
     #     with the RGB channel in the last dimension.
     #   We want the final shape to be (num, 32, 32, 3)
 
-    image = None
+    image = np.reshape(image, (-1, 32, 32, 3))
 
     # DO NOT normalize the images by dividing them with 255.0.
     # With the MNIST digits, we did normalize the images, but not with CIFAR,
@@ -159,8 +189,25 @@ def get_specific_class(image_full, label_full, specific_class=0, num=None):
     #     you will return ["a1", "a2", "a3"]
     # Hint: Numpy mask operations and index slicing will be useful.
 
-    image = None
-    label = None
+    # i = 0
+    # array = np.empty(0)
+    # array2 = np.empty(0, 1)
+    # while array.size < num:
+    #     if (label_full[i] == specific_class):
+    #         array = np.append(array, np.array([label_full[i]]), axis = 0)
+    #         array2 = np.append(array2, np.array([image_full[i]]), axis = 0)
+    #     i = i+1
+    i_list_image = []
+    i_list_label = []
+
+    for i in range(len(label_full)):
+        if  str(label_full[i]) in str(specific_class):
+            i_list_label.append([label_full[i]])
+            i_list_image.append([image_full[i]])
+            if (len(i_list_image) == num): break
+      
+    image = np.concatenate(i_list_image)
+    label = np.concatenate(i_list_label)
 
     return image, label
 
@@ -195,11 +242,17 @@ def get_subset(image_full, label_full, class_list=list(range(10)), num=100):
     image_list = []
     label_list = []
 
+    for i in class_list:
+        result = get_specific_class(image_full, label_full, i, num)
+        image_list.append(result[0])
+        label_list.append(result[1])
+
     # TODO: use the get_specific_class function for each class in class_list
 
     # TODO: concatenate the image and label arrays for all classes and
     # make sure the return statement follows the specifications of the docstring
-    image = None
-    label = None
+
+    image = np.concatenate(image_list)
+    label = np.concatenate(label_list)
 
     return image, label
