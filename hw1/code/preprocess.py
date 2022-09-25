@@ -125,7 +125,6 @@ def get_data_CIFAR(subset, data_path="../data"):
         new_label.append([np.array(arr[j])])
 
     label = np.concatenate(new_label)
-    print(arr)
     label_names = np.array(arr)
 
     # TODO #3:
