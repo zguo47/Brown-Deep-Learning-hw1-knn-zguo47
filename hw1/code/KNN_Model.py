@@ -133,7 +133,7 @@ class KNN_Model(KNN_ConfMtx):
         # Hint2: If np.argpartition is too confusing, you can use a different numpy function instead
         #        The difference is that np.argpartition takes O(n) amount of time,
         #        while the alternative takes O(n*log(n)) amount of time.
-        nearest_indices = np.argpartition(distances, 1)[0:self.k_neighbors]
+        nearest_indices = np.argsort(distances)[0:self.k_neighbors]
         nearest_label = []
         for i in nearest_indices:
             nearest_label.append(self.label_train[i])
@@ -141,7 +141,7 @@ class KNN_Model(KNN_ConfMtx):
         class_counts = [0]*len(self.class_list)
         for j in self.class_list:
             for k in nearest_label:
-                if (j == k):
+                if (str(k) in str(j)):
                     class_counts[n] = class_counts[n]+1
             n = n + 1
         nearest_label = np.array(nearest_label)

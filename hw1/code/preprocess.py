@@ -135,7 +135,8 @@ def get_data_CIFAR(subset, data_path="../data"):
     #     with the RGB channel in the last dimension.
     #   We want the final shape to be (num, 32, 32, 3)
 
-    image = np.reshape(image, (-1, 32, 32, 3))
+    image = np.reshape(image, (-1, 3, 32, 32))
+    image = np.moveaxis(image, 1, 3)
 
     # DO NOT normalize the images by dividing them with 255.0.
     # With the MNIST digits, we did normalize the images, but not with CIFAR,
