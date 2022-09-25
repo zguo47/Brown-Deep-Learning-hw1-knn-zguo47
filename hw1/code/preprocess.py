@@ -125,6 +125,8 @@ def get_data_CIFAR(subset, data_path="../data"):
         new_label.append([np.array(arr[j])])
 
     label = np.concatenate(new_label)
+    print(arr)
+    label_names = np.array(arr)
 
     # TODO #3:
     #   You should reshape the input image np.array to (num, width, height, channels).
@@ -202,7 +204,7 @@ def get_specific_class(image_full, label_full, specific_class=0, num=None):
     i_list_label = []
 
     for i in range(len(label_full)):
-        if  str(label_full[i]) in str(specific_class):
+        if  label_full[i] == specific_class:
             i_list_label.append([label_full[i]])
             i_list_image.append([image_full[i]])
             if (len(i_list_image) == num): break

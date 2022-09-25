@@ -141,7 +141,7 @@ class KNN_Model(KNN_ConfMtx):
         class_counts = [0]*len(self.class_list)
         for j in self.class_list:
             for k in nearest_label:
-                if (str(k) in str(j)):
+                if k == j:
                     class_counts[n] = class_counts[n]+1
             n = n + 1
         nearest_label = np.array(nearest_label)
