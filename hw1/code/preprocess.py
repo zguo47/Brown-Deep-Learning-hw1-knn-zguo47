@@ -83,11 +83,17 @@ def get_data_CIFAR(subset, data_path="../data"):
     #   Then, you can access the components i.e. 'data' via cifar_dict[b"data"].
     #   If data_files contains multple entries, make sure to unpickle all of them
     #   and concatenate the results together into a single training set.
+    """
+    The unpickle method. Unpickles the given file and returns a dictionary. 
+    """
     def unpickle(file):
         import pickle
         with open(file, 'rb') as fo:
             dict = pickle.load(fo, encoding='bytes')
         return dict
+    """
+    Unpickle the images and labels and store them in corresponding python lists.
+    """
     arr_data = []
     arr_labels = []
     for i in data_files:
@@ -95,7 +101,9 @@ def get_data_CIFAR(subset, data_path="../data"):
         pickled_labels = unpickle(i)[b"labels"]
         arr_data.append(pickled_data)
         arr_labels.extend(pickled_labels)
-        
+    """
+    Convert data list to a numpy array and reshape so that there is 3072 cols. 
+    """        
     arr_data = np.array(arr_data).reshape(-1, 3072)
 
     cifar_dict = {  ## HINT: Might help to start out with this
@@ -116,15 +124,27 @@ def get_data_CIFAR(subset, data_path="../data"):
     #   binary strings and not UTF-8 strings right now)
     #   This variable "label" should be a Numpy array, not a Python list.
 
+    """
+    Decode the binary strings in label_names and store them into a new python 
+    list. 
+    """
     arr = []
     for i in label_names:
         i = codecs.decode(i)
         arr.append(i)
+    """
+    Convert each item in the python list to a numpy array and store into a new
+    python list. Then use np.concatenate on the python list to make it a single
+    numpy array.
+    """
     new_label = []
     for j in label:
         new_label.append([np.array(arr[j])])
 
     label = np.concatenate(new_label)
+    """
+    Make the label_names also the decoded version. 
+    """
     label_names = np.array(arr)
 
     # TODO #3:
@@ -201,13 +221,19 @@ def get_specific_class(image_full, label_full, specific_class=0, num=None):
     #     i = i+1
     i_list_image = []
     i_list_label = []
-
+    """
+    Get the labels the same with the specific class into a python list and also
+    add corresponding images into another list. Stop if there are "num" number of images and labels were added
+    already. 
+    """
     for i in range(len(label_full)):
         if  label_full[i] == specific_class:
             i_list_label.append([label_full[i]])
             i_list_image.append([image_full[i]])
             if (len(i_list_image) == num): break
-      
+    """
+    Convert to numpy arrays. 
+    """      
     image = np.concatenate(i_list_image)
     label = np.concatenate(i_list_label)
 
@@ -243,7 +269,10 @@ def get_subset(image_full, label_full, class_list=list(range(10)), num=100):
 
     image_list = []
     label_list = []
-
+    """
+    Store the first "num" number of images and labels in the two python lists. 
+    Calling get_specific_class as helper. 
+    """
     for i in class_list:
         result = get_specific_class(image_full, label_full, i, num)
         image_list.append(result[0])

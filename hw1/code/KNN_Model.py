@@ -135,10 +135,22 @@ class KNN_Model(KNN_ConfMtx):
         #        while the alternative takes O(n*log(n)) amount of time.
         nearest_indices = np.argsort(distances)[0:self.k_neighbors]
         nearest_label = []
+        """
+        Create a python list of nearest_labels by getting the corresponding
+        labels of the nearest_indices.
+        """
         for i in nearest_indices:
             nearest_label.append(self.label_train[i])
         n = 0
+        """
+        Initiate the class_counts list and filling it with zeros. Has the same
+        length with class_list.
+        """
         class_counts = [0]*len(self.class_list)
+        """
+        Count the number of times each specific class appears in nearest_label,
+        show this result in class_counts
+        """
         for j in self.class_list:
             for k in nearest_label:
                 if k == j:
@@ -187,6 +199,9 @@ class KNN_Model(KNN_ConfMtx):
             #      but for CIFAR, you will probably find it useful. Progress checks are also a useful pattern commonly
             #      used when training machine learning models.
             prediction_list.append(self.predict(each_image))
+            """
+            Print "progressing" every 100.
+            """
             if (i%100 == 0):
                 print("progressing... ")
 
